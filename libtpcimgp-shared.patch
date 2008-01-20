@@ -1,0 +1,38 @@
+--- libtpcimgp_1_3_2/Makefile.orig	2007-02-11 08:07:33.000000000 +0100
++++ libtpcimgp_1_3_2/Makefile	2008-01-20 12:20:51.924648377 +0100
+@@ -47,9 +47,9 @@
+ LIBRARY		= libtpcimgp
+ SOURCES 	= imgarithm.c imgmatch.c imgscanner.c imgflip.c \
+                   imgtransform.c point.c imgfilter.c \
+-                  imgthrs.c imgframe.c libtpcimgp.c libtpcimgpv.c
+-OBJECTS 	= ${SOURCES:.c=.o}
+-LIBARCHIVE	= ${LIBRARY}.a
++                  imgthrs.c imgframe.c libtpcimgpv.c
++OBJECTS 	= ${SOURCES:.c=.lo}
++LIBARCHIVE	= ${LIBRARY}.la
+ DOXYGEN		= doxygen
+ CC		= gcc
+ CFLAGS 		= -std=gnu99 -s -Wall -O ${INCLUDE}
+@@ -73,9 +73,12 @@
+ # ------------- Compilation: --------------------------------------------------#
+ compile: ${LIBARCHIVE} ${LIBEXEC}
+ 
++%.lo: %.c
++	libtool --tag=CC --mode=compile $(CC) $(CFLAGS) -c $<
++
+ # Compile library
+ ${LIBARCHIVE}: ${OBJECTS}
+-	${AR} -rvs ${LIBARCHIVE} ${OBJECTS}
++	libtool --tag=CC --mode=link $(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^ -ltpcimgio -ltpcmisc -lm -rpath $(PET_LIB)
+ 
+ # Compile executable
+ ${LIBEXEC}: ${LIBARCHIVE} ${LIBRARY}.c
+@@ -100,7 +103,7 @@
+ install: libversion libinstall execinstall
+ 
+ libinstall: ${LIBARCHIVE}
+-	${ADDDATE} -i=${LIBRARY}.version -o=${PET_LIB} -nodate ${LIBARCHIVE}
++	libtool --tag=CC --mode=install install $(LIBARCHIVE) $(DESTDIR)$(PET_LIB)
+ 
+ execinstall: ${LIBEXEC}
+ 	${ADDDATE} -i=${LIBRARY}.version -o=${PET_BIN} -nodate -copy ${LIBEXEC}
